@@ -25,13 +25,29 @@ export default function MainPage() {
 
 
   const [fatura, setFatura] = useState(60000)
-  const [ItauFinal, setItauFinal] = useState(0)
+  const [itauFinal, setItauFinal] = useState(0)
+  const [nubankFinal, setNubankFinal] = useState(0)
+
+  // Valor Transferências
+  const [transf, setTransf] = useState(
+    {
+      "Corrente Nubank": 0,
+      "Poupança Nubank": 0,
+      "Poupança Itaú": 0
+    }
+  )
+
 
 
 
   console.log(contas)
   console.log(poupanças)
   console.log(fatura)
+
+  useState(() => {
+    setNubankFinal(contas["Nubank"] - fatura)
+    console.log("Nubank Final", nubankFinal)
+  }, [contas])
 
 
   return (
@@ -43,7 +59,7 @@ export default function MainPage() {
 
         <div className="w-1/4">
 
-          <h2 className="text-2xl pb-2 text-center">Entradas</h2>
+          <h2 className="text-2xl pb-2 text-center">Contas</h2>
           {Object.entries(contas).map(([key, value]) => (
             <Card key={key} className="font-semibold mx-auto mb-3">
               <h4 className="text-2xl  text-gray-900 dark:text-gray-50"> {key} </h4>
@@ -60,7 +76,7 @@ export default function MainPage() {
               <h4 className="text-2xl  text-gray-900 dark:text-gray-50"> {key} </h4>
               <MoneyField
                 value={value}
-                onChange={(e) => setContas({ ...poupanças, [key]: moneyToNumber(e.target.value) })}
+                onChange={(e) => setPoupanças({ ...poupanças, [key]: moneyToNumber(e.target.value) })}
               />
             </Card>
           ))}
@@ -80,15 +96,47 @@ export default function MainPage() {
         </div>
 
 
-        <div className="w-1/4">
+        <div className="w-2/4">
+
           <h2 className="text-2xl pb-2 text-center">Transferências</h2>
           <Card className="font-semibold mx-auto mb-3">
-            <h4 className="text-2xl  text-gray-900 dark:text-gray-50"> -- </h4>
+            <div className="flex flex-row">
 
-            <MoneyField
-              value={totalBudget}
-              onChange={(e) => setTotalBudget(e.target.value)}
-            />
+
+
+
+
+              <div className="flex flex-col me-2 text-tremor-default text-xl text-tremor-content dark:text-dark-tremor-content">
+                <h4> Corrente Nubank </h4>
+                <h4> Fatura </h4>
+                <h4> Transf Nubank </h4>
+                <h4> Subtotal </h4>
+
+
+              </div>
+
+              <div className="flex flex-col">
+                <p className="text-xl font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                  {moneyMask(contas["Nubank"])}
+                </p>
+
+                <p className="text-xl font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                  {moneyMask(fatura * -1)}
+                </p>
+
+                <MoneyField
+                  classes="text-xl text-sky-400"
+                  value={transf["Corrente Nubank"]}
+                  onChange={(e) => setTransf({ ...transf, ["Corrente Nubank"]: moneyToNumber(e.target.value) })}
+                />
+
+                <p className="text-xl font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                  {moneyMask(contas["Nubank"] - fatura + transf["Corrente Nubank"])}
+                </p>
+              </div>
+
+
+            </div>
 
           </Card>
         </div>
@@ -96,16 +144,19 @@ export default function MainPage() {
 
 
 
-        <div className="w-2/4">
+        <div className="w-1/4">
           <h2 className="text-2xl pb-2 text-center">Resumo</h2>
 
           <Card className="font-semibold mx-auto mb-3">
 
-            <h4 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-              Itaú
-            </h4>
+            <h4 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"> Itaú </h4>
             <p className="text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              {moneyMask(ItauFinal)}
+              {moneyMask(contas["Itaú"] - transf["Corrente Nubank"] - transf["Poupança Itaú"] - transf["Poupança Nubank"])}
+            </p>
+
+            <h4 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"> Nubank </h4>
+            <p className="text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+              {moneyMask(contas["Nubank"] - fatura + transf["Corrente Nubank"])}
             </p>
 
           </Card>
